@@ -6,3 +6,53 @@ output: html_document
 Makai Freeman 115153547
 Brian Murray 114120922
 
+
+# Introduction
+
+This is a tutorial created for our final project for CMSC320 at the University of Maryland. This tutorial is a walkthrough the data science pipeline. This includes data curation, parsing, and management; exploratory data analysis; hypothesis testing and machine learning to provide analysis; and the curation of a message covering insights learned during the tutorial. 
+
+To complete this tutorial, we use listings from Airbnb in the Washington D.C. area. The ultimate goal is to use the pipeline mentioned above to predict the cost of future listings in the area.  
+
+First we need some packages. 
+###### NEED TO ADD THE PACKAGES THAT WE USE AND A SHORT DESCRUPTION #########
+
+```{r load_data, message=FALSE}
+library(readr)
+library(dplyr)
+```
+
+# 1. Data Curation, Parsing, and Management
+
+First we want to find suitable data, we used data straight from Airbnb. 
+Then we want to download the data from the website. This is done using the "read_csv" function as the file we want to download is a csv (Comma-separated values).
+```{r load data, message=FALSE}
+abnb <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2019-04-15/visualisations/listings.csv")
+
+head(abnb)
+```
+This downloads the data and stores it as a tibble with the name "abnb."
+
+Next we want to take this data and manipulate it a bit. To do this, we want to remove the values that we will not need. In our case, it is the columns "neighbourhood_group", "last_review", and "reviews_per_month."
+
+We will use the functions 
+select()
+%>%
+
+```{r convert}
+
+abnb <- abnb %>% 
+  select(-"neighbourhood_group", -"last_review", -"reviews_per_month")
+
+head(abnb)
+```
+
+This takes the previous tibble and removes the columns that we will not be using. 
+
+
+
+
+
+
+
+
+
