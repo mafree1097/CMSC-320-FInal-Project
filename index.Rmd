@@ -19,6 +19,7 @@ First we need some packages.
 ```{r load_data, message=FALSE}
 library(readr)
 library(dplyr)
+library(tidyverse)
 ```
 
 # 1. Data Curation, Parsing, and Management
@@ -49,8 +50,50 @@ head(abnb)
 This takes the previous tibble and removes the columns that we will not be using. 
 
 
+```{r days}
+
+abnb %>% 
+  ggplot(aes(x = '', y = availability_365)) + geom_boxplot()
+
+```
+
+This plot shows the spread of available days in the next year for the listings included in the dataset. The listings have anywhere from 0 to 365 days available, with the mean appearing to be around 80. 
 
 
+```{r neighborhoods}
+
+abnb %>% 
+  ggplot(aes(x = neighbourhood)) + geom_histogram(stat="count")
+
+```
+This plot shows the number of listings that are in each neighborhood in Washington, D.C. _____ has the most listings with almost 875. 
+
+```{r price}
+
+abnb %>% 
+  ggplot(aes(x = '', y = price)) + geom_boxplot()
+
+```
+This plot shows the spread of prices for Washington D.C. listings. 
+
+
+```{r min_nights}
+
+abnb %>% 
+  ggplot(aes(x = '', y = minimum_nights)) + geom_boxplot()
+
+```
+This graph shows the spread of minimum number of nights required by listings in Washington D.C.
+
+```{r num listings}
+
+abnb %>% 
+  select(host_id, calculated_host_listings_count) %>%
+  unique() %>%
+  ggplot(aes(x = calculated_host_listings_count)) + geom_histogram()
+
+```
+This plot shows the number of hosts with a given number of listings.
 
 
 
