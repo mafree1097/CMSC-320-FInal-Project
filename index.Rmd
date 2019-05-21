@@ -14,15 +14,13 @@ This is a tutorial created for our final project for CMSC320 (Introduction to Da
 To complete this tutorial, we use listings from Airbnb in the Washington D.C. area. The ultimate goal is to use the pipeline mentioned above to predict the cost of future listings in the area.  
 
 First we need some packages. 
-###### NEED TO ADD THE PACKAGES THAT WE USE AND A SHORT DESCRUPTION #########
+###### NEED TO ADD THE PACKAGES THAT WE USE AND A SHORT DESCRIPTION #########
 
 ```{r load_data, message=FALSE}
 library(readr)
 library(dplyr)
 library(tidyverse)
 library(leaflet)
-library(stringi)
-library(stringr)
 ```
 
 # 1. Data Curation, Parsing, and Management
@@ -204,31 +202,6 @@ abnb <- abnb[abnb$availability_365 > 0,]
 head(abnb)
 ```
 
-```{r map, message=FALSE}
-
-icons <- awesomeIcons(
-  markerColor = getColor(abnb)
-)
-abnbmap <- leaflet(abnb) %>%
-  addTiles() %>%
-  addAwesomeMarkers(icon = icons, clusterOptions = markerClusterOptions(), label = ~as.character(name), popup = ~as.character(price)) %>%
-   setView(lat=38.9072, lng=-77.0369, zoom=12)
-abnbmap
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r blah}
 
 abnb %>% 
@@ -238,9 +211,22 @@ abnb %>%
   ggplot(aes(x = date_compiled, y = qw)) +
   geom_point() +
   geom_smooth(method = lm)
-  
+``` 
+
+From this plot, we can see that there seems to be a slight linear relationship between the mean price and the time of year. To confirm this, we will do a hypothesis test on the relationship.
+
+# Part 3 Hypothesis Testing
+```{r hypo}
+
+hg <- aov(price ~ room_type, data = abnb)
+summary(hg)
+TukeyHSD(hg)
 
 ```
+
+
+
+
 
 
 
