@@ -14,15 +14,13 @@ This is a tutorial created for our final project for CMSC320 (Introduction to Da
 To complete this tutorial, we use listings from Airbnb in the Washington D.C. area. The ultimate goal is to use the pipeline mentioned above to predict the cost of future listings in the area.  
 
 First we need some packages. 
-###### NEED TO ADD THE PACKAGES THAT WE USE AND A SHORT DESCRUPTION #########
+###### NEED TO ADD THE PACKAGES THAT WE USE AND A SHORT DESCRIPTION #########
 
 ```{r load_data, message=FALSE}
 library(readr)
 library(dplyr)
 library(tidyverse)
 library(leaflet)
-library(stringi)
-library(stringr)
 ```
 
 # 1. Data Curation, Parsing, and Management
@@ -204,6 +202,7 @@ abnb <- abnb[abnb$availability_365 > 0,]
 head(abnb)
 ```
 
+<<<<<<< HEAD
 ```{r map, message=FALSE}
 
 icons <- awesomeIcons(
@@ -215,6 +214,7 @@ abnbmap <- leaflet(abnb) %>%
    setView(lat=38.9072, lng=-77.0369, zoom=12)
 abnbmap
 ```
+
 ```{r blah}
 
 abnb %>% 
@@ -224,24 +224,36 @@ abnb %>%
   ggplot(aes(x = date_compiled, y = qw)) +
   geom_point() +
   geom_smooth(method = lm)
+``` 
+
+From this plot, we can see that there seems to be a slight linear relationship between the mean price and the time of year. To confirm this, we will do a hypothesis test on the relationship.
+
+# Part 3 Hypothesis Testing
+```{r hypo}
+
+hg <- aov(price ~ room_type, data = abnb)
+summary(hg)
+TukeyHSD(hg)
+
 ```
-Select neighborhoods (5)
-AOV test (analysis of variance) price ~ neighbourhood
-
-summary p-values
-tukey - pvalues, confidence interval
-differences
-
-
+From our anaylsis above you can see that we obtained a pvalue lower than 0.05. Hence we rejected our initial hypothesis on the affects of room type on the price of the airbnb. 
 ```{r}
   test <- abnb %>%
-    slice(15:25)
-  
-  auto_fit <- lm(price~neighbourhood, data=test)
-  auto_fit
-  auto_fit_stats <- auto_fit %>%
-  broom::tidy() 
-  auto_fit_stats
+    slice(20:25)
+
+  auto_fit <- aov(price~neighbourhood, data=test)
+  summary(auto_fit)
+  TukeyHSD(auto_fit)
+
+```
+From our analysis we can see that we can not reject our initial hypothesis of whether there is a relationship between price and neighbourhoods. The pvalue we obtained in the analysis above is greater than 0.05 and therefore we shall not reject our initial hypothesis.
+
+
+# Part 4 Macnhine Learning
+```{r}
+
+
+
 
 ```
 
