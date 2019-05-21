@@ -58,9 +58,11 @@ Next we move into exploratory data analysis. Exploratory data analysis is the in
 We will begin with a display of each distribution for our variables. 
 
 To do this, we use the functions
+####################################################################################
 ggplot() (and the geom functions related)
 %>% 
 
+# Part A
 ```{r availability}
 abnb %>%
   ggplot(aes(x = availability_365)) +
@@ -84,39 +86,80 @@ This plot is much more even than before. The data seems to be bimodal with peaks
 
 ```{r neighborhoods}
 
-abnb %>% 
-  ggplot(aes(x = neighbourhood)) + 
-  geom_histogram(stat="count")
+abnb %>%
+  group_by(neighbourhood) %>%
+  summarize(neigh_count = n()) %>%
+  ggplot(aes(x=reorder(neighbourhood, -neigh_count), y=neigh_count)) +
+  geom_bar(stat = "identity") +
+  labs(x="Neighborhood", y="Count") +
+  coord_flip() 
 
 ```
-This plot shows the number of listings that are in each neighborhood in Washington, D.C. _____ has the most listings with almost 875. 
+This plot shows the number of listings that are in each neighborhood in Washington, D.C.. Capitol Hill, Lincoln Park has the most listings with 610. 
 
 ```{r price}
-
 abnb %>% 
-  ggplot(aes(x = '', y = price)) + geom_boxplot()
-
+  ggplot(aes(x = price)) + 
+  geom_histogram(bins = 100) +
+  scale_x_log10()
 ```
-This plot shows the spread of prices for Washington D.C. listings. 
+This plot shows the spread of prices for Washington D.C. listings. We use a logarithmic scale for this because there is a huge outlier as one listing has a price of $10,000. 
 
 
 ```{r min_nights}
 
 abnb %>% 
-  ggplot(aes(x = '', y = minimum_nights)) + geom_boxplot()
+  ggplot(aes(x = minimum_nights)) + 
+  geom_histogram(binwidth = .25) +
+  scale_x_log10()
 
 ```
-This graph shows the spread of minimum number of nights required by listings in Washington D.C.
+This graph shows the spread of minimum number of nights required by listings in Washington D.C.. We also use a logorithmic scale as there is an outlier at 600+ minimum nights. 
 
-```{r num listings}
+
+# Part B
+
+```{r price by room}
+
+abnb %>%
+  ggplot(aes(x= room_type, y = price)) +
+  geom_violin(draw_quantiles = .5) +
+  scale_y_log10()
+
+```
+
+This plot is a violin plot with the median drawn as a horizontal line. From this plot we can see a possible correlation between price and type of room.
+
+```{r neighborhood price}
+
+abnb %>%
+  group_by(neighbourhood) %>%
+  summarize(neigh_med = median(price)) %>%
+  ggplot(aes(x=reorder(neighbourhood, -neigh_med), y=neigh_med)) +
+  geom_point() +
+  labs(x="Neighborhood", y="Price per Night") +
+  coord_flip() 
+```
+
+```{r price min nights}
 
 abnb %>% 
-  select(host_id, calculated_host_listings_count) %>%
-  unique() %>%
-  ggplot(aes(x = calculated_host_listings_count)) + geom_histogram()
-
+  ggplot(aes(x = id, y = price)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  scale_y_log10()
 ```
-This plot shows the number of hosts with a given number of listings.
+
+
+# 3. Hypothesis testing
+
+
+
+
+
+
+
+
 
 
 
