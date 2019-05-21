@@ -20,6 +20,9 @@ First we need some packages.
 library(readr)
 library(dplyr)
 library(tidyverse)
+library(leaflet)
+library(stringi)
+library(stringr)
 ```
 
 # 1. Data Curation, Parsing, and Management
@@ -197,6 +200,30 @@ abnb <- rbind(abnb, a18, m18, j18, aug18, s18, o18, n18, d18, j19, f19, m19)
 
 head(abnb)
 ```
+
+```{r map, message=FALSE}
+
+icons <- awesomeIcons(
+  markerColor = getColor(abnb)
+)
+abnbmap <- leaflet(abnb) %>%
+  addTiles() %>%
+  addAwesomeMarkers(icon = icons, clusterOptions = markerClusterOptions(), label = ~as.character(name), popup = ~as.character(price)) %>%
+   setView(lat=38.9072, lng=-77.0369, zoom=12)
+abnbmap
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
