@@ -201,8 +201,6 @@ abnb <- rbind(abnb, a18, m18, j18, aug18, s18, o18, n18, d18, j19, f19, m19)
 abnb <- abnb[abnb$availability_365 > 0,]
 head(abnb)
 ```
-
-<<<<<<< HEAD
 ```{r map, message=FALSE}
 
 icons <- awesomeIcons(
@@ -251,14 +249,15 @@ From our analysis we can see that we can not reject our initial hypothesis of wh
 
 # Part 4 Macnhine Learning
 ```{r}
-
-
-
-
+lr <- lm(price~date_compiled, data=abnb)
+lr_stat <- lr%>%
+  broom::tidy()
+lr_stat
+lr%>%
+  broom::augment()%>%
+  ggplot(aes(x=.fitted, y = .resid))+
+  geom_point()+ geom_smooth(method = lm)
 ```
-
-
-
-
+We are going to reject the null hypothesis of no relationship between the time of year and price. As our pvalue shows there is a significant relationship between price and the time of year. As the years go by there is a slight decrease in the price of airbnbs. 
 
 
