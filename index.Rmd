@@ -215,20 +215,6 @@ abnbmap <- leaflet(abnb) %>%
    setView(lat=38.9072, lng=-77.0369, zoom=12)
 abnbmap
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r blah}
 
 abnb %>% 
@@ -238,11 +224,26 @@ abnb %>%
   ggplot(aes(x = date_compiled, y = qw)) +
   geom_point() +
   geom_smooth(method = lm)
+```
+Select neighborhoods (5)
+AOV test (analysis of variance) price ~ neighbourhood
+
+summary p-values
+tukey - pvalues, confidence interval
+differences
+
+
+```{r}
+  test <- abnb %>%
+    slice(15:25)
   
+  auto_fit <- lm(price~neighbourhood, data=test)
+  auto_fit
+  auto_fit_stats <- auto_fit %>%
+  broom::tidy() 
+  auto_fit_stats
 
 ```
-
-
 
 
 
