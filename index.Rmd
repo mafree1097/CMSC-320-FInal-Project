@@ -141,63 +141,67 @@ abnb %>%
   coord_flip() 
 ```
 
-```{r price min nights}
-
-abnb %>% 
-  ggplot(aes(x = id, y = price)) +
-  geom_point() +
-  geom_smooth(method = lm) +
-  scale_y_log10()
-```
-
 
 # 3. Hypothesis testing
 
 As we continue with our analysis, we are going to need more data to make predictions about the future of these listings on Airbnb. Our current data was collected in April 2019, we will add data that was compiled between April 2018 and April 2019 in order to look at changes over time so that we can make predictions about the future. 
 
-```{r load new data, message=FALSE}
-abnb <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2019-04-15/visualisations/listings.csv")
+We will also use the data that is previously compiled to decide if neighborhood has an affect on price. 
 
-abnb$date_compiled <- "April 2019"
+```{r load new data, message=FALSE}
+abnb$date_compiled <- as.Date("2019-04-01")
 
 a18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-04-15/visualisations/listings.csv")
-a18$date_compiled <- "April 2018"
+a18$date_compiled <- as.Date("2018-04-01")
 
 m18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-05-18/visualisations/listings.csv")
-m18$date_compiled <- "May 2018"
+m18$date_compiled <- as.Date("2018-05-01")
 
 j18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-07-20/visualisations/listings.csv")
-j18$date_compiled <- "July 2018"
+j18$date_compiled <- as.Date("2018-07-01")
 
 aug18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-08-18/visualisations/listings.csv")
-aug18$date_compiled <- "August 2018"
+aug18$date_compiled <- as.Date("2018-08-01")
 
 s18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-09-14/visualisations/listings.csv")
-s18$date_compiled <- "September 2018"
+s18$date_compiled <- as.Date("2018-09-01")
 
 o18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-10-12/visualisations/listings.csv")
-o18$date_compiled <- "October 2018"
+o18$date_compiled <- as.Date("2018-10-01")
 
 n18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-11-15/visualisations/listings.csv")
-n18$date_compiled <- "November 2018"
+n18$date_compiled <- as.Date("2018-11-01")
 
 d18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-12-13/visualisations/listings.csv")
-d18$date_compiled <- "December 2018"
+d18$date_compiled <- as.Date("2018-12-01")
 
 j19 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2019-01-17/visualisations/listings.csv")
-j19$date_compiled <- "January 2019"
+j19$date_compiled <- as.Date("2019-01-01")
 
 f19 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2019-02-11/visualisations/listings.csv")
-f19$date_compiled <- "February 2019"
+f19$date_compiled <- as.Date("2019-02-01")
 
 m19 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2019-03-12/visualisations/listings.csv")
-m19$date_compiled <- "March 2019"
+m19$date_compiled <- as.Date("2019-03-01")
 
 abnb <- rbind(abnb, a18, m18, j18, aug18, s18, o18, n18, d18, j19, f19, m19)
-
+abnb <- abnb[abnb$availability_365 > 0,]
 head(abnb)
 ```
 
+
+```{r blah}
+
+abnb %>% 
+  arrange(date_compiled) %>%
+  group_by(date_compiled) %>%
+  summarise(qw = mean(price)) %>%
+  ggplot(aes(x = date_compiled, y = qw)) +
+  geom_point() +
+  geom_smooth(method = lm)
+  
+
+```
 
 
 
