@@ -4,7 +4,9 @@ output: html_document
 ---
 
 Makai Freeman 115153547
+
 Brian Murray 114120922
+
 Chukwuemeka Okeke 114585332
 
 # Introduction
@@ -15,8 +17,11 @@ To complete this tutorial, we use listings from Airbnb in the Washington D.C. ar
 
 First we need some packages. 
 readr - contains methods used to read rectangular data like csv files (doumentation can be found at https://readr.tidyverse.org/)
+
 dplyr - contains methods used to manipulate data frames (documentation can be found at https://dplyr.tidyverse.org)
+
 tidyverse - contains packages commonly used in data analysis (documentation can be found at https://www.tidyverse.org/packages/)
+
 leaflet - contains methods used to create interactive maps (documentation can be found at https://rstudio.github.io/leaflet/)
 
 ```{r load_data, message=FALSE}
@@ -24,6 +29,7 @@ library(readr)
 library(dplyr)
 library(tidyverse)
 library(leaflet)
+library(broom)
 ```
 
 # 1. Data Curation, Parsing, and Management
@@ -66,14 +72,23 @@ To do this, we use a few new functions:
 
 ggplot() - begins a plot that you have to add layers to
       related geom functions:
+      
       geom_histogram() - creates histogram
+      
       geom_bar() - creates a bar graph
+      
       geom_violin() - creates a violin graph
+      
       geom_point() - creates a scatterplot
+
 group_by() - allows operations to be performed by the group of a certain column
+
 summarize() - produces summary statistics for data frames
+
 labs() - specifies the labels used onthe axes of a plot
+
 coord_flip() - swaps the x and y axes
+
 scale_x/y_log10() - performs a logarithmic scaling of the values on the x/y axis
 
 # Part A
@@ -111,7 +126,6 @@ abnb %>%
   geom_bar(stat = "identity") +
   labs(x="Neighborhood", y="Count") +
   coord_flip() 
-#graph is flipped for easier viewing
 ```
 This plot shows the number of listings that are in each neighborhood in Washington, D.C.. Capitol Hill, Lincoln Park has the most listings with 610. 
 
@@ -121,7 +135,7 @@ abnb %>%
   geom_histogram(bins = 100) +
   scale_x_log10()
 ```
-This plot shows the spread of prices for Washington D.C. listings. We use a logarithmic scale for this because there is a huge outlier as one listing has a price of $10,000. 
+This plot shows the spread of prices for Washington D.C. listings. We use a logarithmic scale for this because there is a huge outlier as one listing has a price of $10,000. This graph is skewed right but has a median around 100-200 dollars.
 
 
 ```{r min_nights}
@@ -248,16 +262,16 @@ abnb %>%
 
 From this plot, we can see that there seems to be a slight linear relationship between the mean price and the time of year. To confirm this, we will do a hypothesis test on the relationship.
 
-```{r hypo}
+```{r hypo price*date}
 #compute analysis of variance
 hg <- aov(price ~ date_compiled, data = abnb)
 #summarize variance model
 summary(hg)
 
 ```
-The analysis of variance produced a p-value smaller than 0.05.Because of this, we can reject the null hypothesis of no relation for price and the time of year. We will run this test two more times, to see if there is a relationship between room type and price and price and neighborhood.
+The analysis of variance produced a p-value smaller than 0.05.Because of this, we can reject the null hypothesis of no relation for price and the time of year. We will run this test two more times, to see if there is a relationship between room type and price and price and neighborhood. We can see that from our graph above, our inital prediction of a relationship between price and year was correct. 
 
-```{r hypo}
+```{r hypo price * room type}
 
 hg <- aov(price ~ room_type, data = abnb)
 summary(hg)
@@ -265,26 +279,24 @@ TukeyHSD(hg)
 
 ```
 From our anaylsis above you can see that we obtained a pvalue lower than 0.05. Hence we rejected our null hypothesis on the affects of room type on the price of the airbnb. 
-```{r}
-#Why is this only using 6 rows?
-  test <- abnb %>%
-    slice(20:25)
 
-  auto_fit <- aov(price~neighbourhood, data=test)
-  summary(auto_fit)
-  TukeyHSD(auto_fit)
-
+```{r hypo price * neighborhood}
+hg <- aov(price ~ neighbourhood, data = abnb)
+summary(hg)
 ```
-From our analysis we can see that we can not reject our mull hypothesis of whether there is a relationship between price and neighbourhoods. The pvalue we obtained in the analysis above is greater than 0.05 and therefore we shall not reject our null hypothesis.
 
+When analyzing price when related to neighborhood, we see that the p-value is extremely small thus we reject the null hyopthesis that each neighborhood has the same price. We can again see that from our graph above that there is a relationship between price and the neighborhood that the listing is in. 
 
 #4. Machine Learning
 
 In this section, we will be creating linear models for the price vs time of year and price vs number of listings. 
 
 New functions:
+
 lm() - creates the linear model
+
 tidy() - summarizes linear model in a table
+
 augment() - converts non-tidy data to a data frame
 
 ```{r price vs time of year}
@@ -303,6 +315,7 @@ lr%>%
   ggplot(aes(x=.fitted, y = .resid))+
   geom_point()+ geom_smooth(method = lm)
 ```
+
 We are going to reject the null hypothesis of no relationship between the time of year and price. As our p-value shows there is a significant relationship between price and the time of year. As the year reaches fall and winter there is a slight decrease in the price of Airbnbs. 
 
 ```{r price vs number of listings}
@@ -321,6 +334,7 @@ lr %>%
 Based on the data from this linear model, the number of listings that a host has a relationship with the price that they charge per night. The p-value for the regression model is below the necessary .05 to reject the null hypothesis of no relationship. The plot of the residuals confirms this, with a much larger spread for those with fewer listings. 
 
 #Conclusions
+
 From our data pipleine, we were able to draw a number of conclusions about Airbnb listings in Washington D.C.. We saw that the average price of available listings decreased as the year moved from summer to fall and winter. Hosts that have multiple listings on Airbnb are more likely to have more affordable options, with lower costs per night. We confirmed that the type of room you are booking will affect the price that you pay. These insights could be valuable for people looking to stay in an Airbnb in Washngton D.C.. Knowing that the prices dropped in the latter half of the year may encourage travelers to come to the area in the Fall or Winter as opposed to the Spring or Summer.
  
 
