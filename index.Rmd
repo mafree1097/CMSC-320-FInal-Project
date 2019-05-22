@@ -9,12 +9,15 @@ Chukwuemeka Okeke 114585332
 
 # Introduction
 
-This is a tutorial created for our final project for CMSC320 (Introduction to Data Science) at the University of Maryland. This tutorial is a walkthrough the data science pipeline. This includes data curation, parsing, and management; exploratory data analysis; hypothesis testing and machine learning to provide analysis; and the curation of a message covering insights learned during the tutorial. 
+This is a tutorial created for our final project for CMSC320 (Introduction to Data Science) at the University of Maryland. This tutorial is a walkthrough of the data science pipeline. This includes data curation, parsing, and management; exploratory data analysis; hypothesis testing and machine learning to provide analysis; and the curation of a message covering insights learned during the tutorial. 
 
 To complete this tutorial, we use listings from Airbnb in the Washington D.C. area. The ultimate goal is to use the pipeline mentioned above to predict the cost of future listings in the area.  
 
 First we need some packages. 
-###### NEED TO ADD THE PACKAGES THAT WE USE AND A SHORT DESCRIPTION #########
+readr - contains methods used to read rectangular data like csv files (doumentation can be found at https://readr.tidyverse.org/)
+dplyr - contains methods used to manipulate data frames (documentation can be found at https://dplyr.tidyverse.org)
+tidyverse - contains packages commonly used in data analysis (documentation can be found at https://www.tidyverse.org/packages/)
+leaflet - contains methods used to create interactive maps (documentation can be found at https://rstudio.github.io/leaflet/)
 
 ```{r load_data, message=FALSE}
 library(readr)
@@ -32,16 +35,17 @@ abnb <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/20
 
 head(abnb)
 ```
+
 This downloads the data and stores it as a tibble with the name "abnb."
 
 Next we want to take this data and manipulate it a bit. To do this, we want to remove the values that we will not need. In our case, it is the columns "neighbourhood_group", "last_review", and "reviews_per_month."
 
 We will use the functions 
-select()
-%>%
+select() - Chooses columns of a dataframe to keep
+%>% - Creates a pipeline to use with a dataframe
 
 ```{r convert}
-
+#remove unwanted columns
 abnb <- abnb %>% 
   select(-"neighbourhood_group", -"last_review", -"reviews_per_month")
 
@@ -58,13 +62,26 @@ Next we move into exploratory data analysis. Exploratory data analysis is the in
 
 We will begin with a display of each distribution for our variables. 
 
-To do this, we use the functions
-####################################################################################
-ggplot() (and the geom functions related)
-%>% 
+To do this, we use a few new functions:
+
+ggplot() - begins a plot that you have to add layers to
+      related geom functions:
+      geom_histogram() - creates histogram
+      geom_bar() - creates a bar graph
+      geom_violin() - creates a violin graph
+      geom_point() - creates a scatterplot
+group_by() - allows operations to be performed by the group of a certain column
+summarize() - produces summary statistics for data frames
+labs() - specifies the labels used onthe axes of a plot
+coord_flip() - swaps the x and y axes
+scale_x/y_log10() - performs a logarithmic scaling of the values on the x/y axis
 
 # Part A
+
+For the first part of our data analysis, we will be looking at the spread and concentration of individual variables.
+
 ```{r availability}
+#creates histogram with bins that have a range of 50
 abnb %>%
   ggplot(aes(x = availability_365)) +
   geom_histogram(binwidth = 50)
@@ -83,10 +100,10 @@ abnb %>%
 
 ```
 
-This plot is much more even than before. The data seems to be bimodal with peaks around 50-100 and 300+. The latter makes sense as there are likely many locations that are available 365 days a year.
+This plot is more even than before. The data seems to be bimodal with peaks around 50-100 and 300+. The latter makes sense as there are likely many locations that are available 365 days a year.
 
 ```{r neighborhoods}
-
+#counts the number of listings in each neighborhood and order them from least to greatest count
 abnb %>%
   group_by(neighbourhood) %>%
   summarize(neigh_count = n()) %>%
@@ -94,7 +111,7 @@ abnb %>%
   geom_bar(stat = "identity") +
   labs(x="Neighborhood", y="Count") +
   coord_flip() 
-
+#graph is flipped for easier viewing
 ```
 This plot shows the number of listings that are in each neighborhood in Washington, D.C.. Capitol Hill, Lincoln Park has the most listings with 610. 
 
@@ -115,13 +132,15 @@ abnb %>%
   scale_x_log10()
 
 ```
-This graph shows the spread of minimum number of nights required by listings in Washington D.C.. We also use a logorithmic scale as there is an outlier at 600+ minimum nights. 
+This graph shows the spread of minimum number of nights required by listings in Washington D.C.. We also use a logorithmic scale as there is an outlier at over 600 minimum nights. 
 
 
 # Part B
 
-```{r price by room}
+For the second part of our data analysis, we will be looking at one variable in terms of another, in this case price by room type and price by neighborhood.
 
+```{r price by room}
+#create a violin plot 
 abnb %>%
   ggplot(aes(x= room_type, y = price)) +
   geom_violin(draw_quantiles = .5) +
@@ -132,7 +151,7 @@ abnb %>%
 This plot is a violin plot with the median drawn as a horizontal line. From this plot we can see a possible correlation between price and type of room.
 
 ```{r neighborhood price}
-
+#caluclates the median price per night in each neighborhood and orders them from least to greatest
 abnb %>%
   group_by(neighbourhood) %>%
   summarize(neigh_med = median(price)) %>%
@@ -141,7 +160,7 @@ abnb %>%
   labs(x="Neighborhood", y="Price per Night") +
   coord_flip() 
 ```
-
+This plot shows the median price per night in each neighborhood. We can see that the West End, Foggy Bottom, GWU neighborhood has the highest median price per night.   
 
 # 3. Hypothesis testing
 
@@ -149,9 +168,21 @@ As we continue with our analysis, we are going to need more data to make predict
 
 We will also use the data that is previously compiled to decide if neighborhood has an affect on price. 
 
+New functions:
+as.Date() - takes a string and turns it into a datetime object
+rbind() - concatinates dataframes with the same columns
+arrange() - sorts data from least to greatest by a column value
+geom_smooth() - plots a line of best fit to a graph
+aov() - performs a one-way ANOVA test
+summary() - summarizes the analysis of variance model from aov()
+TukeyHSD() - performs a Tukey HSD test
+slice() - selects rows by position
+
 ```{r load new data, message=FALSE}
+#adds date column to current dataframe for identification
 abnb$date_compiled <- as.Date("2019-04-01")
 
+#downloads and reformats the available data for the year April 2018 - April 2019
 a18 <- read_csv("http://data.insideairbnb.com/united-states/dc/washington-dc/2018-04-15/visualisations/listings.csv") %>% 
   select(-"neighbourhood_group", -"last_review", -"reviews_per_month")
 a18$date_compiled <- as.Date("2018-04-01")
@@ -201,19 +232,10 @@ abnb <- rbind(abnb, a18, m18, j18, aug18, s18, o18, n18, d18, j19, f19, m19)
 abnb <- abnb[abnb$availability_365 > 0,]
 head(abnb)
 ```
-```{r map, message=FALSE}
 
-icons <- awesomeIcons(
-  markerColor = getColor(abnb)
-)
-abnbmap <- leaflet(abnb) %>%
-  addTiles() %>%
-  addAwesomeMarkers(icon = icons, clusterOptions = markerClusterOptions(), label = ~as.character(name), popup = ~as.character(price)) %>%
-   setView(lat=38.9072, lng=-77.0369, zoom=12)
-abnbmap
-```
 
-```{r blah}
+
+```{r mean price}
 
 abnb %>% 
   arrange(date_compiled) %>%
@@ -226,7 +248,15 @@ abnb %>%
 
 From this plot, we can see that there seems to be a slight linear relationship between the mean price and the time of year. To confirm this, we will do a hypothesis test on the relationship.
 
-# Part 3 Hypothesis Testing
+```{r hypo}
+#compute analysis of variance
+hg <- aov(price ~ date_compiled, data = abnb)
+#summarize variance model
+summary(hg)
+
+```
+The analysis of variance produced a p-value smaller than 0.05.Because of this, we can reject the null hypothesis of no relation for price and the time of year. We will run this test two more times, to see if there is a relationship between room type and price and price and neighborhood.
+
 ```{r hypo}
 
 hg <- aov(price ~ room_type, data = abnb)
@@ -234,8 +264,9 @@ summary(hg)
 TukeyHSD(hg)
 
 ```
-From our anaylsis above you can see that we obtained a pvalue lower than 0.05. Hence we rejected our initial hypothesis on the affects of room type on the price of the airbnb. 
+From our anaylsis above you can see that we obtained a pvalue lower than 0.05. Hence we rejected our null hypothesis on the affects of room type on the price of the airbnb. 
 ```{r}
+#Why is this only using 6 rows?
   test <- abnb %>%
     slice(20:25)
 
@@ -244,20 +275,65 @@ From our anaylsis above you can see that we obtained a pvalue lower than 0.05. H
   TukeyHSD(auto_fit)
 
 ```
-From our analysis we can see that we can not reject our initial hypothesis of whether there is a relationship between price and neighbourhoods. The pvalue we obtained in the analysis above is greater than 0.05 and therefore we shall not reject our initial hypothesis.
+From our analysis we can see that we can not reject our mull hypothesis of whether there is a relationship between price and neighbourhoods. The pvalue we obtained in the analysis above is greater than 0.05 and therefore we shall not reject our null hypothesis.
 
 
-# Part 4 Macnhine Learning
-```{r}
+#4. Machine Learning
+
+In this section, we will be creating linear models for the price vs time of year and price vs number of listings. 
+
+New functions:
+lm() - creates the linear model
+tidy() - summarizes linear model in a table
+augment() - converts non-tidy data to a data frame
+
+```{r price vs time of year}
+#create linear model
 lr <- lm(price~date_compiled, data=abnb)
+
+#convert and display results
 lr_stat <- lr%>%
-  broom::tidy()
-lr_stat
+  tidy()
+
+head(lr_stat)
+
+#plot residuals
 lr%>%
-  broom::augment()%>%
+  augment()%>%
   ggplot(aes(x=.fitted, y = .resid))+
   geom_point()+ geom_smooth(method = lm)
 ```
-We are going to reject the null hypothesis of no relationship between the time of year and price. As our pvalue shows there is a significant relationship between price and the time of year. As the years go by there is a slight decrease in the price of airbnbs. 
+We are going to reject the null hypothesis of no relationship between the time of year and price. As our p-value shows there is a significant relationship between price and the time of year. As the year reaches fall and winter there is a slight decrease in the price of Airbnbs. 
 
+```{r price vs number of listings}
+lr <- lm(price~calculated_host_listings_count, data = abnb)
 
+lr_stats <- lr %>%
+  tidy()
+
+head(lr_stats)
+
+lr %>% 
+  augment() %>% 
+  ggplot(aes(x = .fitted, y = .resid)) + geom_point()
+```
+
+Based on the data from this linear model, the number of listings that a host has a relationship with the price that they charge per night. The p-value for the regression model is below the necessary .05 to reject the null hypothesis of no relationship. The plot of the residuals confirms this, with a much larger spread for those with fewer listings. 
+
+#Conclusions
+From our data pipleine, we were able to draw a number of conclusions about Airbnb listings in Washington D.C.. We saw that the average price of available listings decreased as the year moved from summer to fall and winter. Hosts that have multiple listings on Airbnb are more likely to have more affordable options, with lower costs per night. We confirmed that the type of room you are booking will affect the price that you pay. These insights could be valuable for people looking to stay in an Airbnb in Washngton D.C.. Knowing that the prices dropped in the latter half of the year may encourage travelers to come to the area in the Fall or Winter as opposed to the Spring or Summer.
+ 
+
+For further visualization, we decided to include a map with this tutorial. With this map, you can zoom in on a certain area and see the address and nightly price for Airbnbs in Washington, D.C..
+
+```{r map, message=FALSE}
+
+icons <- awesomeIcons(
+ # markerColor = getColor(abnb)
+)
+abnbmap <- leaflet(abnb) %>%
+  addTiles() %>%
+  addAwesomeMarkers(icon = icons, clusterOptions = markerClusterOptions(), label = ~as.character(name), popup = ~as.character(price)) %>%
+   setView(lat=38.9072, lng=-77.0369, zoom=12)
+abnbmap
+```
